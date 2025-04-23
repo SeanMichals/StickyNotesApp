@@ -130,147 +130,19 @@
     </select>
     <button onclick="addEvent()">Add Event</button>
   </div>
+  <!--SettingBtn-->
+  <div style="text-align: right; margin-bottom: 10px;">
+    <button id="settingsBtn">⚙️ Settings</button>
+    <div id="settingsMenu" style="display: none; position: absolute; right: 20px; background: white; border: 1px solid #ccc; padding: 10px; border-radius: 5px; box-shadow: 2px 2px 6px rgba(0,0,0,0.1);">
+      <p style="margin: 0 0 10px;"><strong>Account</strong></p>
+      <button onclick="logout()">Logout</button>
+      <!-- Future features -->
+      <!-- <button onclick="changeTheme()">Dark Mode</button> -->
+    </div>
+  </div>
   
   <div id="notes"></div>
 
-  <script>
-    async function fetchEvents() {
-      const res = await fetch('http://localhost:3000/events');
-      const data = await res.json();
-      console.log("Fetched Events:", data); // Debugging: log the fetched data
-      document.getElementById('notes').innerHTML = '';
-
-      data.forEach(e => {
-        let dateTimeString = `${e.date}T${e.time}`.replace(/\s/g, '');
-        if(dateTimeString.endsWith('Z')) {
-            dateTimeString = dateTimeString.slice(0, -1); // Remove the 'Z'
-        }
-        console.log("Generated DateTime String:", dateTimeString);
-        const fullDateTime = new Date(e.date);
-        // Check if the date is valid
-        if (isNaN(fullDateTime)) {
-            console.error("Invalid Date:", fullDateTimeString);
-        return;
-        }
-        //formatting the date and time
-        const formattedDate = fullDateTime.toLocaleDateString('en-US', {
-            weekday: 'long',     // e.g. "Tuesday"
-            year: 'numeric',
-            month: 'long',       // e.g. "April"
-            day: 'numeric'
-        });
-        //formatting the time
-        const formattedTime = fullDateTime.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true         // Use 12-hour format (e.g. 4:00 PM)
-        });
-        // Assigning formatted date and time to variables
-        const div = document.createElement('div');
-        div.className = `note ${e.highlight_class || ''}`;
-        div.innerHTML = `
-            <strong>${e.title}</strong><br>
-            ${e.description}<br>
-            <em>${formattedTime}</em><br>
-            <em>${formattedDate}</em><br>
-            <button onclick="deleteEvent(${e.id})">Delete</button>
-            <button onclick="highlightEvent(${e.id})">Highlight</button>
-        `;
-        document.getElementById('notes').appendChild(div);
-        });
-    }
-
-    async function addEvent() {
-    const data = {
-      title: document.getElementById('title').value,
-      description: document.getElementById('desc').value,
-      date: document.getElementById('date').value,
-      time: document.getElementById('time').value,
-      group_name: document.getElementById('group').value,  // Group now comes from dropdown
-      recurrence: document.getElementById('recurrence').value
-    };
-
-    // Debugging: log the data object to make sure it's correct
-    console.log("Event Data:", data);
-
-    try {
-      const res = await fetch('http://localhost:3000/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)  // Sending the data to the backend
-      });
-
-      if (res.ok) {
-        alert("Event added!");
-        fetchEvents();  // You could refresh events here if you want
-      } else {
-      // Handle duplicate error
-      const errorData = await res.json();
-      if (errorData.message && errorData.message.includes("Duplicate")) {
-        const userConfirmed = confirm(errorData.message);
-        if (userConfirmed) {
-          // Retry to add the event if the user confirms
-          const retryData = {...data, force: true};
-          const retryRes = await fetch('http://localhost:3000/events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(retryData)
-          });
-
-          if (retryRes.ok) {
-            alert("Event added after confirmation!");
-            fetchEvents();
-          } else {
-            alert("Failed to add event after confirmation.");
-          }
-        } else {
-          alert("Event not added.");
-        }
-      } else {
-        alert("Failed to add event.");
-      }
-    }
-  } catch (err) {
-    console.error("Error:", err);
-    alert("Error adding event.");
-  }
-  }
-
-    async function deleteEvent(id) {
-      await fetch(`http://localhost:3000/events/${id}`, { method: 'DELETE' });
-      fetchEvents();
-    }
-
-    const highlightColors = ['highlight-orange', 'highlight-purple', 'highlight-green', 'highlight-red', 'highlight-blue'];
-    async function highlightEvent(id) {
-        // Fetch the current event
-        const res = await fetch(`http://localhost:3000/events`);
-        const events = await res.json();
-        const event = events.find(e => e.id === id);
-
-        // Determine next color index
-        const currentColor = event.highlight_class || '';
-        let nextIndex = 0;
-
-        if (currentColor) {
-            const currentIndex = highlightColors.indexOf(currentColor);
-            nextIndex = (currentIndex + 1) % highlightColors.length;
-        }
-
-        const nextColor = highlightColors[nextIndex];
-
-        // Send update with new color
-        await fetch(`http://localhost:3000/events/${id}/highlight`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ highlight_class: nextColor })
-        });
-        // Update the event in the UI
-
-        fetchEvents();
-    }
-
-    fetchEvents();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
