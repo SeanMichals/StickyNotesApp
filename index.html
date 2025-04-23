@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>StickyNote App</title>
+  <script>
+    if (!localStorage.getItem('userId')) {
+      window.location.href = 'login.html';
+    }
+  </script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
