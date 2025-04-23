@@ -113,4 +113,15 @@ app.get('/events', (req, res) => {
   });
 });
 
+app.put('/events/:id', (req, res) => {
+  const { title, description } = req.body;
+
+  const sql = 'UPDATE events SET title = ?, description = ? WHERE id = ?';
+  db.query(sql, [title, description, req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send('Event updated');
+  });
+});
+
+
 app.listen(3000, () => console.log('Server running on port 3000'));
