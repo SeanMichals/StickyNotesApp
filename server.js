@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 const db = mysql.createConnection({
-  host:"SeansComp",
+  host: "SeansComp",
   user: "root",
   password: "Y8#vTq9!M4z@XpL2",
   database: "StickyNoteDatabase"
@@ -47,25 +47,24 @@ app.post('/login', (req, res) => {
 
 // Add Event (with duplicate check)
 app.post('/events', (req, res) => {
-  const { title, description, date, time, group_name, recurrence, force } = req.body;
+  const { title, description, date, time, group_name, recurrence, force, userId } = req.body;
 
-  // Check if the event already exists (same title, date, and time)
-  const checkDuplicateSql = 'SELECT * FROM events WHERE title = ? AND date = ? AND time = ?';
-  
-  db.query(checkDuplicateSql, [title, date, time], (err, results) => {
+  if (!userId) return res.status(400).json({ error: 'Missing user ID' });
+
+  const checkDuplicateSql = 'SELECT * FROM events WHERE title = ? AND date = ? AND time = ? AND user_id = ?';
+
+  db.query(checkDuplicateSql, [title, date, time, userId], (err, results) => {
     if (err) return res.status(500).send(err);
 
     if (results.length > 0 && !force) {
-      // If duplicates found and force is not set, send a message about duplication
-      // Event already exists, send a message about duplication
       return res.status(400).json({ message: "Duplicate event found. Are you sure you want to add this?" });
     }
 
-    // If no duplicates, proceed to add the new event
-    const insertSql = `INSERT INTO events (title, description, date, time, group_name, recurrence)
-                       VALUES (?, ?, ?, ?, ?, ?)`;
-
-    db.query(insertSql, [title, description, date, time, group_name, recurrence], (err, result) => {
+    const insertSql = `
+      INSERT INTO events (title, description, date, time, group_name, recurrence, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    db.query(insertSql, [title, description, date, time, group_name, recurrence, userId], (err, result) => {
       if (err) return res.status(500).send(err);
       res.send('Event added');
     });
@@ -82,7 +81,11 @@ app.delete('/events/:id', (req, res) => {
 
 // Highlight Event
 app.patch('/events/:id/highlight', (req, res) => {
-  const {highlight_class} = req.body;
+  const { highlight_class } = req.body;
+
+  // Ensure highlight_class is provided
+  if (!highlight_class) return res.status(400).json({ error: 'Missing highlight class' });
+
   const query = 'UPDATE events SET highlight_class = ?, is_highlighted = TRUE WHERE id = ?';
   db.query(query, [highlight_class, req.params.id], (err) => {
     if (err) return res.status(500).send(err);
@@ -90,20 +93,20 @@ app.patch('/events/:id/highlight', (req, res) => {
   });
 });
 
-// Search Events
-app.get('/events/search/:query', (req, res) => {
-  const query = `%${req.params.query}%`;
-  db.query('SELECT * FROM events WHERE title LIKE ? OR description LIKE ?', [query, query], (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Get All Events (optional group filter)
+// Get Events for a User (with optional group filter)
 app.get('/events', (req, res) => {
-  const group = req.query.group;
-  const sql = group ? 'SELECT * FROM events WHERE group_name = ?' : 'SELECT * FROM events';
-  const params = group ? [group] : [];
+  const { group, userId } = req.query;
+
+  if (!userId) return res.status(400).json({ error: 'Missing user ID' });
+
+  let sql = 'SELECT * FROM events WHERE user_id = ?';
+  const params = [userId];
+
+  if (group) {
+    sql += ' AND group_name = ?';
+    params.push(group);
+  }
+
   db.query(sql, params, (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
