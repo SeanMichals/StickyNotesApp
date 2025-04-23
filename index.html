@@ -98,14 +98,25 @@
     }
 
     .highlight-red {
-       background-color: #ffcdd2 !important;
-      border: 2px solid red;
+        background-color: #ffcdd2 !important;
+        border: 2px solid red;
     }
 
     .highlight-blue {
       background-color: #bbdefb !important;
       border: 2px solid #2196f3;
     }
+    
+    [contenteditable="true"] {
+      border: 1px dashed transparent;
+      padding: 2px;
+    }
+    [contenteditable="true"]:focus {
+      border-color: #888;
+      background-color: #f9f9f9;
+      outline: none;
+    }
+
   </style>
   
 </head>
