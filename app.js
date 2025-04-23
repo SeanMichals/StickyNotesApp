@@ -1,4 +1,4 @@
-// Check if the user is logged in, if not redirect to login page
+// // Check if the user is logged in, if not redirect to login page
 if (!localStorage.getItem('userId')) {
     window.location.href = 'login.html';
   }
@@ -39,36 +39,45 @@ if (!localStorage.getItem('userId')) {
         dateTimeString = dateTimeString.slice(0, -1); // Remove the 'Z'
       }
       console.log("Generated DateTime String:", dateTimeString);
-      const fullDateTime = new Date(e.date);
-      // Check if the date is valid
-      if (isNaN(fullDateTime)) {
-        console.error("Invalid Date:", fullDateTimeString);
-        return;
-      }
-      // Formatting the date and time
-      const formattedDate = fullDateTime.toLocaleDateString('en-US', {
-        weekday: 'long', // e.g. "Tuesday"
-        year: 'numeric',
-        month: 'long', // e.g. "April"
-        day: 'numeric'
-      });
-      const formattedTime = fullDateTime.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true // Use 12-hour format (e.g. 4:00 PM)
-      });
+
+      const fullDateTime = new Date(e.date);  // This was working before
+if (isNaN(fullDateTime)) {
+  console.error("Invalid Date:", e.date);
+  return;
+}
+
+const formattedDate = fullDateTime.toLocaleDateString('en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+// NEW: Separate time parsing
+const [hour, minute] = e.time.split(':');
+const timeObj = new Date();
+timeObj.setHours(hour, minute);
+const formattedTime = timeObj.toLocaleTimeString('en-US', {
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true
+});
+
+
   
       // Assigning formatted date and time to variables
       const div = document.createElement('div');
       div.className = `note ${e.highlight_class || ''}`;
       div.innerHTML = `
-        <strong>${e.title}</strong><br>
-        ${e.description}<br>
+        <strong contenteditable="true" class="editable-title">${e.title}</strong><br>
+        <div contenteditable="true" class="editable-desc">${e.description}</div><br>
         <em>${formattedTime}</em><br>
         <em>${formattedDate}</em><br>
+        <button onclick="saveEdit(${e.id}, this)">Save</button>
         <button onclick="deleteEvent(${e.id})">Delete</button>
         <button onclick="highlightEvent(${e.id})">Highlight</button>
       `;
+
       document.getElementById('notes').appendChild(div);
     });
   }
@@ -150,6 +159,26 @@ async function highlightEvent(id) {
       console.error("Error highlighting event:", err);
     }
   }
+
+  async function saveEdit(id, btn) {
+    const noteDiv = btn.parentElement;
+    const newTitle = noteDiv.querySelector('.editable-title').innerText.trim();
+    const newDesc = noteDiv.querySelector('.editable-desc').innerText.trim();
+  
+    const res = await fetch(`http://localhost:3000/events/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newTitle, description: newDesc })
+    });
+  
+    if (res.ok) {
+      alert("Changes saved!");
+      fetchEvents(); // Refresh
+    } else {
+      alert("Error saving changes.");
+    }
+  }
+  
   
 
   
