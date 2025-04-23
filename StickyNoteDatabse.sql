@@ -1,0 +1,17 @@
+CREATE TABLE events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    date DATE,
+    time TIME,
+    is_highlighted BOOLEAN DEFAULT FALSE,
+    group_name VARCHAR(100),
+    recurrence ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
