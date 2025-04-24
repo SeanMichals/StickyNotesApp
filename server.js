@@ -123,5 +123,45 @@ app.put('/events/:id', (req, res) => {
   });
 });
 
+// Save user's background
+app.post('/users/:id/background', (req, res) => {
+  const { image_url } = req.body;
+  const userId = req.params.id;
+
+  if (image_url === undefined) return res.status(400).json({ error: "Missing image URL" });
+
+  // Check if one already exists
+  db.query('SELECT * FROM image_background WHERE user_id = ?', [userId], (err, results) => {
+    if (err) return res.status(500).send(err);
+
+    if (results.length > 0) {
+      // Update existing
+      db.query('UPDATE image_background SET image_url = ? WHERE user_id = ?', [image_url, userId], (err) => {
+        if (err) return res.status(500).send(err);
+        res.json({ success: true });
+      });
+    } else {
+      // Insert new
+      db.query('INSERT INTO image_background (user_id, image_url) VALUES (?, ?)', [userId, image_url], (err) => {
+        if (err) return res.status(500).send(err);
+        res.json({ success: true });
+      });
+    }
+  });
+});
+
+
+// Get user's background
+app.get('/users/:id/background', (req, res) => {
+  const userId = req.params.id;
+
+  db.query('SELECT image_url FROM image_background WHERE user_id = ?', [userId], (err, results) => {
+    if (err) return res.status(500).send(err);
+    if (results.length === 0) return res.json({ image_url: "" });
+
+    res.json({ image_url: results[0].image_url });
+  });
+});
+
 
 app.listen(3000, () => console.log('Server running on port 3000'));
