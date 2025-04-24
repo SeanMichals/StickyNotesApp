@@ -178,6 +178,57 @@ async function highlightEvent(id) {
       alert("Error saving changes.");
     }
   }
+
+  async function saveBackground() {
+    const userId = localStorage.getItem("userId");
+    const imageUrl = document.getElementById("background-select").value;
+  
+    if (!userId) return alert("You must be logged in.");
+  
+    const res = await fetch(`http://localhost:3000/users/${userId}/background`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_url: imageUrl })
+    });
+  
+    const data = await res.json();
+    if (data.success) {
+      document.body.style.backgroundImage = imageUrl ? `url(${imageUrl})` : "";
+      alert("Background saved!");
+    } else {
+      alert("Error saving background.");
+    }
+  }
+  
+  // Load background on page load
+  window.addEventListener("DOMContentLoaded", async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    const res = await fetch(`http://localhost:3000/users/${userId}/background`);
+    const data = await res.json();
+  
+    if (data.image_url) {
+      document.body.style.backgroundImage = `url(${data.image_url})`;
+      document.getElementById("background-select").value = data.image_url;
+      changeBackground(data.image_url);
+    }
+  });
+
+  function changeBackground(imageUrl) {
+    console.log('Changing background to:', imageUrl);  // Debugging line
+    document.body.style.backgroundImage = `url('${imageUrl}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.height = '100vh';  // Ensure it takes the full viewport height
+    document.body.style.margin = '0';      // Remove default margin
+  }
+
+  document.getElementById("background-select").addEventListener("change", (event) => {
+    const selectedImageUrl = event.target.value;
+    changeBackground(selectedImageUrl);
+  });
   
   
 
