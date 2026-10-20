@@ -27,7 +27,7 @@ if (!localStorage.getItem('userId')) {
     const userId = localStorage.getItem('userId');
     if (!userId) return window.location.href = 'login.html';
 
-    const res = await fetch(`http://localhost:3000/events?userId=${userId}`);
+    const res = await fetch(`/events?userId=${userId}`);
     const data = await res.json();
     
     console.log("Fetched Events:", data); // Debugging: log the fetched data
@@ -98,7 +98,7 @@ const formattedTime = timeObj.toLocaleTimeString('en-US', {
     console.log("Event Data:", data);
   
     try {
-      const res = await fetch('http://localhost:3000/events', {
+      const res = await fetch('/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -118,7 +118,7 @@ const formattedTime = timeObj.toLocaleTimeString('en-US', {
   
   // Function to delete an event
   async function deleteEvent(id) {
-    await fetch(`http://localhost:3000/events/${id}`, { method: 'DELETE' });
+    await fetch(`/events/${id}`, { method: 'DELETE' });
     fetchEvents();  // Refresh events list after deletion
   }
   
@@ -129,7 +129,7 @@ const highlightColors = ['highlight-orange', 'highlight-purple', 'highlight-gree
 async function highlightEvent(id) {
     try {
       const userId = localStorage.getItem('userId');
-      const res = await fetch(`http://localhost:3000/events?userId=${userId}`);
+      const res = await fetch(`/events?userId=${userId}`);
       const events = await res.json();
   
       if (!Array.isArray(events)) {
@@ -148,7 +148,7 @@ async function highlightEvent(id) {
       const currentIndex = highlightColors.indexOf(currentColor);
       const nextColor = highlightColors[(currentIndex + 1) % highlightColors.length];
   
-      await fetch(`http://localhost:3000/events/${id}/highlight`, {
+      await fetch(`/events/${id}/highlight`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ highlight_class: nextColor })
@@ -165,7 +165,7 @@ async function highlightEvent(id) {
     const newTitle = noteDiv.querySelector('.editable-title').innerText.trim();
     const newDesc = noteDiv.querySelector('.editable-desc').innerText.trim();
   
-    const res = await fetch(`http://localhost:3000/events/${id}`, {
+    const res = await fetch(`/events/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: newTitle, description: newDesc })
@@ -185,7 +185,7 @@ async function highlightEvent(id) {
   
     if (!userId) return alert("You must be logged in.");
   
-    const res = await fetch(`http://localhost:3000/users/${userId}/background`, {
+    const res = await fetch(`/users/${userId}/background`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image_url: imageUrl })
@@ -205,7 +205,7 @@ async function highlightEvent(id) {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
   
-    const res = await fetch(`http://localhost:3000/users/${userId}/background`);
+    const res = await fetch(`/users/${userId}/background`);
     const data = await res.json();
   
     if (data.image_url) {
