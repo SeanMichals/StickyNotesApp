@@ -75,7 +75,6 @@ docker-compose.yml   Runs the app and MySQL together
 ## Known Limitations
 
 - Login stores the user ID in the browser instead of using sessions or tokens.
-- Edit, delete, and highlight routes do not yet check that a note belongs to the logged-in user.
 - No minimum password length is enforced.
 
 ## Future Improvements
