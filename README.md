@@ -53,7 +53,7 @@ If you change any database passwords after the first run, run `docker compose do
 ```
 public/              Front end (login.html, index.html, app.js)
 server.js            Express server and API routes
-schema.sql           Database tables, loaded automatically on first start
+db/schema.sql           Database tables, loaded automatically on first start
 Dockerfile           Builds the Node app image
 docker-compose.yml   Runs the app and MySQL together
 .env.example         Template for configuration

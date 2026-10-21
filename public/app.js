@@ -118,9 +118,10 @@ const formattedTime = timeObj.toLocaleTimeString('en-US', {
   
   // Function to delete an event
   async function deleteEvent(id) {
-    await fetch(`/events/${id}`, { method: 'DELETE' });
-    fetchEvents();  // Refresh events list after deletion
-  }
+    const userId = localStorage.getItem('userId');
+    await fetch(`/events/${id}?userId=${userId}`, { method: 'DELETE' });
+    fetchEvents();
+}
   
   // Function to highlight an event
   // Function to highlight an event
@@ -151,7 +152,7 @@ async function highlightEvent(id) {
       await fetch(`/events/${id}/highlight`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ highlight_class: nextColor })
+        body: JSON.stringify({ highlight_class: nextColor, userId })
       });
   
       fetchEvents(); // Refresh UI
@@ -161,6 +162,7 @@ async function highlightEvent(id) {
   }
 
   async function saveEdit(id, btn) {
+    const userId = localStorage.getItem('userId');
     const noteDiv = btn.parentElement;
     const newTitle = noteDiv.querySelector('.editable-title').innerText.trim();
     const newDesc = noteDiv.querySelector('.editable-desc').innerText.trim();
@@ -168,7 +170,7 @@ async function highlightEvent(id) {
     const res = await fetch(`/events/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle, description: newDesc })
+      body: JSON.stringify({ title: newTitle, description: newDesc, userId })
     });
   
     if (res.ok) {

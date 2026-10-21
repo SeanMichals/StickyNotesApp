@@ -74,25 +74,42 @@ app.post('/events', (req, res) => {
   });
 });
 
-// Delete Event
+// Delete Event (owner only)
 app.delete('/events/:id', (req, res) => {
-  db.query('DELETE FROM events WHERE id = ?', [req.params.id], (err) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error: 'Missing user ID' });
+
+  db.query('DELETE FROM events WHERE id = ? AND user_id = ?', [req.params.id, userId], (err, result) => {
     if (err) return res.status(500).send(err);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Event not found' });
     res.send('Event deleted');
   });
 });
 
-// Highlight Event
+// Highlight Event (owner only)
 app.patch('/events/:id/highlight', (req, res) => {
-  const { highlight_class } = req.body;
-
-  // Ensure highlight_class is provided
+  const { highlight_class, userId } = req.body;
   if (!highlight_class) return res.status(400).json({ error: 'Missing highlight class' });
+  if (!userId) return res.status(400).json({ error: 'Missing user ID' });
 
-  const query = 'UPDATE events SET highlight_class = ?, is_highlighted = TRUE WHERE id = ?';
-  db.query(query, [highlight_class, req.params.id], (err) => {
+  const query = 'UPDATE events SET highlight_class = ?, is_highlighted = TRUE WHERE id = ? AND user_id = ?';
+  db.query(query, [highlight_class, req.params.id, userId], (err, result) => {
     if (err) return res.status(500).send(err);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Event not found' });
     res.send('Event highlight color updated');
+  });
+});
+
+// Edit Event (owner only)
+app.put('/events/:id', (req, res) => {
+  const { title, description, userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'Missing user ID' });
+
+  const sql = 'UPDATE events SET title = ?, description = ? WHERE id = ? AND user_id = ?';
+  db.query(sql, [title, description, req.params.id, userId], (err, result) => {
+    if (err) return res.status(500).send(err);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Event not found' });
+    res.send('Event updated');
   });
 });
 
@@ -113,16 +130,6 @@ app.get('/events', (req, res) => {
   db.query(sql, params, (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
-  });
-});
-
-app.put('/events/:id', (req, res) => {
-  const { title, description } = req.body;
-
-  const sql = 'UPDATE events SET title = ?, description = ? WHERE id = ?';
-  db.query(sql, [title, description, req.params.id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.send('Event updated');
   });
 });
 
