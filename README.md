@@ -1,5 +1,7 @@
 # StickyNote App
 
+![Project Screenshot](StickyNoteProjectDemo.png)
+
 A full-stack sticky notes and event planner. Create an account, add notes with a date, time, group, and recurrence, edit them in place, color-code them, and pick a background image that is saved to your account.
 
 ## Features
